@@ -1,13 +1,9 @@
 {
-  "name": "madina-exam-pg",
-  "type": "module",
+  "name": "my-monorepo",
+  "private": true,
   "scripts": {
-    "start": "node --env-file=.env src/index.js",
-    "dev": "node --env-file=.env --watch src/index.js"
-  },
-  "dependencies": {
-    "fastify": "^5.8.4",
-    "md5": "^2.3.0",
-    "pg": "^8.20.0"
+    "dev": "pnpm -r --parallel dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev"
   }
 }

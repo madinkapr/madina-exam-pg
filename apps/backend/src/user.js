@@ -4,6 +4,6 @@ select
     u.email,
     u.is_admin
 from users u
-where u.is_admin=true
-offset ($1-1)*$2 limit $2;
+where ($1::int IS NULL OR u.id = $1)  
+AND u.is_admin=true
 `
