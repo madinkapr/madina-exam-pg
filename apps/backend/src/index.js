@@ -21,7 +21,7 @@ app.get('/users', async (req, res) => {
 
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET || "chubakabra"
+            process.env.JWT_SECRET
         );
 
         page = parseInt(page) || 1;
@@ -35,10 +35,6 @@ app.get('/users', async (req, res) => {
         if (isNaN(count) || count < 1) {
             return res.code(400).send({ error: "Count must be a valid positive number" });
         }
-
-        // if (!user_id || isNaN(user_id)) {
-        //     return res.code(400).send({ error: "User ID required and must be a valid number" });
-        // }
 
         const users = await query(USER, user_id);
 
@@ -130,7 +126,7 @@ app.post('/login', async (req, res) => {
                 email: user.email,
                 is_admin: user.is_admin
             },
-            process.env.JWT_SECRET || "chubakabra"
+            process.env.JWT_SECRET
         )
 
         return res.code(200).send({
