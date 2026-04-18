@@ -4,6 +4,10 @@ const API_URL = 'http://localhost:3000';
 
 const app = document.querySelector('#app');
 
+// --- Icons ---
+const EYE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
+
 // --- State Management ---
 function getToken() {
   return localStorage.getItem('token');
@@ -86,7 +90,10 @@ function renderLogin() {
         
         <div class="form-group">
           <label>Parol</label>
-          <input type="password" id="password" placeholder="••••••••" required />
+          <div class="password-wrapper">
+            <input type="password" id="login-password" placeholder="••••••••" required />
+            <span class="eye-icon" onclick="togglePassword('login-password', this)">${EYE_ICON}</span>
+          </div>
         </div>
         
         <button type="submit" class="btn" id="login-btn">
@@ -102,10 +109,10 @@ function renderLogin() {
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const password = document.getElementById('login-password').value;
 
     toggleLoading('login-btn', true);
-    
+
     const { ok, data } = await apiCall('/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
@@ -141,9 +148,19 @@ function renderSignup() {
         
         <div class="form-group">
           <label>Parol (kamida 4 ta belgi)</label>
-          <input type="password" id="signup-password" placeholder="••••••••" required />
+          <div class="password-wrapper">
+            <input type="password" id="signup-password" placeholder="••••••••" required />
+            <span class="eye-icon" onclick="togglePassword('signup-password', this)">${EYE_ICON}</span>
+          </div>
         </div>
-        
+
+        <div class="form-group">
+          <label>Parolni tasdiqlang</label>
+          <div class="password-wrapper">
+            <input type="password" id="signup-confirm-password" placeholder="••••••••" required />
+            <span class="eye-icon" onclick="togglePassword('signup-confirm-password', this)">${EYE_ICON}</span>
+          </div>
+        </div>        
         <div class="checkbox-group">
           <input type="checkbox" id="signup-admin" />
           <label for="signup-admin" style="margin:0;">Admin sifatida ro'yxatdan o'tish</label>
@@ -163,10 +180,15 @@ function renderSignup() {
     e.preventDefault();
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('signup-confirm-password').value;
     const is_admin = document.getElementById('signup-admin').checked;
 
+    if (password !== confirmPassword) {
+      return showNotification('Parollar mos kelmadi!', 'error');
+    }
+
     toggleLoading('signup-btn', true);
-    
+
     const { ok, data } = await apiCall('/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, is_admin })
@@ -243,7 +265,7 @@ async function renderDashboard() {
 async function fetchAndRenderUsers(searchId = '') {
   const tbody = document.getElementById('users-table-body');
   tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Yuklanmoqda...</td></tr>';
-  
+
   const token = getToken();
   let url = '/users?token=' + token;
   if (searchId) {
@@ -262,7 +284,7 @@ async function fetchAndRenderUsers(searchId = '') {
   if (currentUser) {
     document.getElementById('user-email').textContent = currentUser.email || 'Foydalanuvchi';
     document.getElementById('user-avatar').textContent = (currentUser.email || '?').charAt(0).toUpperCase();
-    
+
     const roleBadge = document.getElementById('user-role');
     roleBadge.textContent = currentUser.is_admin ? 'Admin' : 'Foydalanuvchi';
     roleBadge.className = currentUser.is_admin ? 'badge admin' : 'badge';
@@ -294,6 +316,19 @@ async function fetchAndRenderUsers(searchId = '') {
     tbody.innerHTML = `<tr><td colspan="3" class="empty-state" style="color:#ef4444">${data.error || 'Xatolik yuz berdi'}</td></tr>`;
   }
 }
+
+// --- Parolni ko'rish/yashirish funksiyasi ---
+window.togglePassword = function(inputId, iconElement) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    iconElement.innerHTML = EYE_OFF_ICON; 
+  } else {
+    input.type = 'password';
+    iconElement.innerHTML = EYE_ICON; 
+  }
+};
+
 
 // --- App Initialization ---
 function init() {
